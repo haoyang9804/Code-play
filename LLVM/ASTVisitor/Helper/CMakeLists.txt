@@ -1,0 +1,1 @@
+add_library(filereader OBJECT FileReader.cpp)
