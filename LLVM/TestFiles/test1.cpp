@@ -4,6 +4,10 @@ namespace n {
   } 
 }
 
+void foo() {
+  
+}
+
 int main() {
   
 }
