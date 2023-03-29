@@ -8,6 +8,8 @@ elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
   set(CMAKE_C_COMPILER /home/gakki/llvm-install-byClang10-rtti/bin/clang)
 endif()
 
+set(CMAKE_CXX_FLAGS "-g")
+
 project(LLVM-play)
 
 find_package(LLVM REQUIRED CONFIG)

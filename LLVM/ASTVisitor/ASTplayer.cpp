@@ -4,6 +4,8 @@
 #include "clang/Frontend/FrontendAction.h"
 #include "clang/Tooling/Tooling.h"
 #include "FileReader.hpp"
+#include "clang/Rewrite/Core/Rewriter.h"
+
 
 using namespace clang;
 
@@ -53,14 +55,11 @@ public:
   }
 
   bool VisitFunctionDecl(FunctionDecl *Declaration) {
-    if (Declaration->getQualifiedNameAsString() == "main") {
-      FullSourceLoc FullLocation = Context->getFullLoc(Declaration->getBeginLoc());
-      if (FullLocation.isValid())
-        llvm::outs() << "FunctionDecl: Found declaration at "
-                     << FullLocation.getSpellingLineNumber() << ":"
-                     << FullLocation.getSpellingColumnNumber() << ", "
-                     << FullLocation.getExpansionLineNumber() << ":"
-                     << FullLocation.getExpansionColumnNumber() << "\n";
+    if (Declaration->getQualifiedNameAsString() == "foo") {
+      IdentifierInfo* barId = &Context->Idents.get("bar");
+      DeclarationName barName(barId);
+      Declaration->setDeclName(barName);
+      // Rewriter rewriter(Context->getSourceManager(), astUnit->getLangOpts());
     }
     return true;
   }
