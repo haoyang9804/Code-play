@@ -14,5 +14,6 @@ df = pd.DataFrame({ 'id' : range(1,N+1),
                     'scaled_size': [random.randint(100,1000) for i in range(1,N+1)]
                    },  columns= ['id', 'weeks_elapsed', 'code','colour', 'texture', 'size', 'scaled_size'])
 print(df)
-grouped = df.groupby(['code', 'colour']).agg( {'size': [np.sum, np.average, np.size, pd.Series.idxmax],'scaled_size': [np.sum, np.average, np.size, pd.Series.idxmax]}).reset_index()
+# grouped = df.groupby(['code', 'colour']).agg( {'size': [np.sum, np.average, np.size, pd.Series.idxmax],'scaled_size': [np.sum, np.average, np.size, pd.Series.idxmax]}).reset_index()
+grouped = df.groupby(['code', 'colour'], group_keys=True).apply(lambda x : x).drop(['code', 'colour'], axis=1)
 print(grouped)
