@@ -3,6 +3,7 @@
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendAction.h"
 #include "clang/Tooling/Tooling.h"
+#include "clang/Basic/SourceLocation.h"
 #include "FileReader.hpp"
 #include "clang/Rewrite/Core/Rewriter.h"
 
@@ -12,8 +13,8 @@ using namespace clang;
 class FindNamedClassVisitor
   : public RecursiveASTVisitor<FindNamedClassVisitor> {
 public:
-  explicit FindNamedClassVisitor(Rewriter rewriter, ASTContext *Context)
-    : Context(Context) {}
+  explicit FindNamedClassVisitor(Rewriter& rewriter, ASTContext *Context)
+    : rewriter(rewriter), Context(Context) {}
 
   bool VisitCXXRecordDecl(CXXRecordDecl *Declaration) {
     if (Declaration->getQualifiedNameAsString() == "n::m::C") {
@@ -56,22 +57,28 @@ public:
 
   bool VisitFunctionDecl(FunctionDecl *Declaration) {
     if (Declaration->getQualifiedNameAsString() == "foo") {
+
+      SourceRange funcRange = Declaration->getSourceRange();
+
+
       IdentifierInfo* barId = &Context->Idents.get("bar");
       DeclarationName barName(barId);
       Declaration->setDeclName(barName);
-      // Rewriter rewriter(Context->getSourceManager(), astUnit->getLangOpts());
+      rewriter.ReplaceText(Declaration->getSourceRange(), "bar");
+      llvm::errs() << "hello\n";  
     }
     return true;
   }
 
 private:
   ASTContext *Context;
+  Rewriter &rewriter;
 };
 
 class FindNamedClassConsumer : public clang::ASTConsumer {
 public:
-  explicit FindNamedClassConsumer(ASTContext *Context)
-    : Visitor(Context) {}
+  explicit FindNamedClassConsumer(Rewriter rewriter, ASTContext *Context)
+    : Visitor(rewriter, Context) {}
 
   virtual void HandleTranslationUnit(clang::ASTContext &Context) {
     Visitor.TraverseDecl(Context.getTranslationUnitDecl());
@@ -83,10 +90,17 @@ private:
 class FindNamedClassAction : public clang::ASTFrontendAction {
 public:
   std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
-    clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
+    clang::CompilerInstance &Compiler, llvm::StringRef InFile) override {
+    rewriter.setSourceMgr(Compiler.getSourceManager(), Compiler.getLangOpts());
     return std::unique_ptr<clang::ASTConsumer>(
-        new FindNamedClassConsumer(&Compiler.getASTContext()));
+        new FindNamedClassConsumer(rewriter, &Compiler.getASTContext()));
   }
+
+  void EndSourceFileAction() override {
+    rewriter.overwriteChangedFiles();
+  }
+private:
+  Rewriter rewriter;
 };
 
 int main(int argc, char **argv) {
