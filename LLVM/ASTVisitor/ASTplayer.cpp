@@ -12,7 +12,7 @@ using namespace clang;
 class FindNamedClassVisitor
   : public RecursiveASTVisitor<FindNamedClassVisitor> {
 public:
-  explicit FindNamedClassVisitor(ASTContext *Context)
+  explicit FindNamedClassVisitor(Rewriter rewriter, ASTContext *Context)
     : Context(Context) {}
 
   bool VisitCXXRecordDecl(CXXRecordDecl *Declaration) {
