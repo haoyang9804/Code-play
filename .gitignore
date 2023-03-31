@@ -12,3 +12,7 @@
 forall-play*
 
 build
+
+
+CMakeFiles
+CMakeCache.txt
