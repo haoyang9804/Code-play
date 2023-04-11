@@ -1,6 +1,7 @@
 #include <iostream>
 
 class A {
+public:
 protected:
   int a = 3;
 };
